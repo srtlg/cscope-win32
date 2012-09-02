@@ -1,5 +1,6 @@
+#line 2 "fscanner.c"
 
-#line 3 "fscanner.c"
+#line 4 "fscanner.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -29747,7 +29748,7 @@ static	void	my_yymore(void);
 
 /* exclusive start conditions. not available in AT&T lex -> use flex! */
 
-#line 29751 "fscanner.c"
+#line 29752 "fscanner.c"
 
 #define INITIAL 0
 #define SDL 1
@@ -29953,7 +29954,7 @@ YY_DECL
 #line 148 "fscanner.l"
 
 
-#line 29957 "fscanner.c"
+#line 29958 "fscanner.c"
 
 	if ( !(yy_init) )
 		{
@@ -30975,7 +30976,7 @@ YY_RULE_SETUP
 #line 844 "fscanner.l"
 ECHO;
 	YY_BREAK
-#line 30979 "fscanner.c"
+#line 30980 "fscanner.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(SDL):
 case YY_STATE_EOF(IN_PREPROC):

@@ -47,6 +47,8 @@
 #endif
 #include <ctype.h>
 
+#include "w32utils.h"
+
 static char const rcsid[] = "$Id: command.c,v 1.36 2012/05/20 13:58:53 broeker Exp $";
 
 
@@ -910,6 +912,7 @@ countrefs(void)
 	    disprefs = 0;
 	    return;
 	}
+	to_longpath(file, sizeof(file));
 	if ((i = strlen(pathcomponents(file, dispcomponents))) > filelen) {
 	    filelen = i;
 	}
