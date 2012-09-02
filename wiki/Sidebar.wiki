@@ -1,5 +1,0 @@
-[BuildingCscope Building Cscope on Windows]
-
-[DatabaseFormatCompatibility Database Format Compatibility]
-
-[VersionHistory Version History]
