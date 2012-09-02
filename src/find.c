@@ -48,7 +48,7 @@
 #endif
 #include <regex.h>
 
-static char const rcsid[] = "$Id: find.c,v 1.21 2009/04/10 13:39:23 broeker Exp $";
+static char const rcsid[] = "$Id: find.c,v 1.25 2012/06/15 11:18:11 nhorman Exp $";
 
 /* most of these functions have been optimized so their innermost loops have
  * only one test for the desired character by putting the char and 
@@ -79,6 +79,8 @@ static	char	*lcasify(char *s);
 static	void	findcalledbysub(char *file, BOOL macro);
 static	void	findterm(char *pattern);
 static	void	putline(FILE *output);
+static  char    *find_symbol_or_assignment(char *pattern, BOOL assign_flag);
+static  BOOL    check_for_assignment(void);
 static	void	putpostingref(POSTING *p, char *pat);
 static	void	putref(int seemore, char *file, char *func);
 static	void	putsource(int seemore, FILE *output);
@@ -87,6 +89,79 @@ static	void	putsource(int seemore, FILE *output);
 
 char *
 findsymbol(char *pattern)
+{
+    return find_symbol_or_assignment(pattern, NO);
+}
+
+/* find the symbol in the cross-reference, and look for assignments */
+char *
+findassign(char *pattern)
+{
+    return find_symbol_or_assignment(pattern, YES);
+}
+
+/* Test reference whether it's an assignment to the symbol found at
+ * (global variable) 'blockp' */
+static BOOL
+check_for_assignment(void) 
+{
+    /* Do the extra work here to determine if this is an
+     * assignment or not.  Do this by examining the next character
+     * or two in blockp */
+    char *asgn_char = blockp;
+
+    while (isspace((unsigned char) asgn_char[0])) {
+	/* skip any whitespace or \n */
+	asgn_char++;
+	if (asgn_char[0] == '\0') {
+	    /* get the next block when we reach the end of
+	     * the current block */
+	    if (NULL == (asgn_char = read_block()))
+		return NO;
+	}
+    }
+    /* check for digraph starting with = */
+    if ((asgn_char[0] & 0x80) && (dichar1[(asgn_char[0] & 0177)/8] == '=')) {
+	return YES;
+    }
+    /* check for plain '=', not '==' */
+    if ((asgn_char[0] == '=') && 
+	(((asgn_char[1] != '=') && !(asgn_char[1] & 0x80)) || 
+	 ((asgn_char[1] & 0x80) && (dichar1[(asgn_char[1]& 0177)/8] != '=')))) {
+	return YES;
+    }
+
+    /* check for operator assignments: +=, ... ^= ? */
+    if (   (   (asgn_char[0] == '+') 
+	    || (asgn_char[0] == '-')
+	    || (asgn_char[0] == '*') 
+	    || (asgn_char[0] == '/') 
+	    || (asgn_char[0] == '%') 
+	    || (asgn_char[0] == '&') 
+	    || (asgn_char[0] == '|') 
+	    || (asgn_char[0] == '^') 
+	   )
+	&& ((asgn_char[1] == '=') || ((asgn_char[1] & 0x80) && (dichar1[(asgn_char[1] &0177)/8] == '=')))
+
+       ) {
+	return YES;
+    }
+
+    /* check for two-letter operator assignments: <<= or >>= ? */
+    if (   (   (asgn_char[0] == '<') 
+            || (asgn_char[0] == '>')
+           )
+	&& (asgn_char[1] == asgn_char[0])
+	&& ((asgn_char[2] == '=') || ((asgn_char[2] & 0x80) && (dichar1[(asgn_char[2] & 0177)/8] == '=')))
+       )
+	return YES;
+    return NO;
+}
+
+/* The actual routine that does the work for findsymbol() and
+* findassign() */
+static char *
+find_symbol_or_assignment(char *pattern, BOOL assign_flag)
 {
 	char	file[PATHLEN + 1];	/* source file name */
 	char	function[PATLEN + 1];	/* function name */
@@ -98,7 +173,7 @@ findsymbol(char *pattern)
 	char firstchar;		/* first character of a potential symbol */
 	BOOL fcndef = NO;
 
-	if (invertedindex == YES) {
+	if ((invertedindex == YES) && (assign_flag == NO)) {
 		long	lastline = 0;
 		POSTING *p;
 
@@ -249,6 +324,14 @@ findsymbol(char *pattern)
 			if (matchrest()) {
 				s = NULL;
 		matched:
+				/* if the assignment flag is set then
+				 * we are looking for assignments and
+				 * some extra filtering is needed */
+				if(assign_flag == YES
+				  && ! check_for_assignment())
+				       goto notmatched;
+
+
 				/* output the file, function or macro, and source line */
 				if (strcmp(macro, global) && s != macro) {
 					putref(0, file, macro);
@@ -260,11 +343,12 @@ findsymbol(char *pattern)
 				else {
 					putref(0, file, global);
 				}
-				if (blockp == NULL) {
-					return NULL;
-				}
 			}
 		notmatched:
+			if (blockp == NULL) {
+				return NULL;
+			}
+			fcndef = NO;
 			cp = blockp;
 		}
 	}
@@ -463,7 +547,6 @@ findcalling(char *pattern)
 			}
 		}
 	}
-	morefuns = 0;
 	
 	return NULL;
 }

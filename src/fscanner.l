@@ -52,7 +52,7 @@
 #define	IFLEVELINC	5	/* #if nesting level size increment */
 #define YY_NO_TOP_STATE 1
 
-static char const rcsid[] = "$Id: fscanner.l,v 1.13 2007/01/07 12:41:23 broeker Exp $";
+static char const rcsid[] = "$Id: fscanner.l,v 1.17 2012/08/02 21:48:08 broeker Exp $";
 
 int	first;	/* buffer index for first char of symbol */
 int	last;	/* buffer index for last char of symbol */
@@ -341,6 +341,8 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			
 			my_yymore();
 			s = strpbrk(my_yytext, "\"<");
+			if (!s)
+				return(LEXERR);
 			my_yytext[my_yyleng-1] = '\0';
 			incfile(s + 1, s);
 			my_yytext[my_yyleng-1] = remember;
@@ -401,6 +403,8 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			/* NOTREACHED */
 		}
 =		{	/* if a global definition initializer */
+			if (!my_yytext)
+				return(LEXERR);
 			if (global == YES && ppdefine == NO && my_yytext[0] != '#') {
 				initializerbraces = braces;
 				initializer = YES;
@@ -409,6 +413,8 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			/* NOTREACHED */
 		}
 :		{	/* a if global structure field */
+			if (!my_yytext)
+				return(LEXERR);
 			if (global == YES && ppdefine == NO && my_yytext[0] != '#') {
 				structfield = YES;
 			}
@@ -465,7 +471,13 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			goto definition;
 			/* NOTREACHED */
 		}
-<IN_PREPROC>.|\n			|
+<IN_PREPROC>\n	{   /* unknown preprocessor line */
+			BEGIN(INITIAL);
+                        ++myylineno;
+			goto more;
+			/* NOTREACHED */
+		}
+<IN_PREPROC>.		 |
 <IN_PREPROC>{identifier}	{   /* unknown preprocessor line */
 			BEGIN(INITIAL);
 			goto more;
@@ -524,7 +536,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 		}
 
 <WAS_IDENTIFIER>{       
-{ws}*\(({wsnl}|{identifier}|{number}|[*&[\]=,.])*\)([()]|{wsnl})*[:a-zA-Z_#{]	{
+{ws}*\(({wsnl}|{identifier}|{number}|[*&[\]=,.:])*\)([()]|{wsnl})*[:a-zA-Z_#{]	{
 			/* a function definition */
 			/* note: "#define a (b) {" and "#if defined(a)\n#" 
 			 * are not fcn definitions! */

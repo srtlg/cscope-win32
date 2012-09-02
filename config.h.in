@@ -25,6 +25,9 @@
 /* Define to 1 if you have the `getcwd' function. */
 #undef HAVE_GETCWD
 
+/* Define to 1 if you have the `getopt_long' function. */
+#undef HAVE_GETOPT_LONG
+
 /* Define to 1 if the system has the type `intmax_t'. */
 #undef HAVE_INTMAX_T
 
@@ -109,10 +112,10 @@
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
-/* Define to 1 if `decimal_point' is member of `struct lconv'. */
+/* Define to 1 if `decimal_point' is a member of `struct lconv'. */
 #undef HAVE_STRUCT_LCONV_DECIMAL_POINT
 
-/* Define to 1 if `thousands_sep' is member of `struct lconv'. */
+/* Define to 1 if `thousands_sep' is a member of `struct lconv'. */
 #undef HAVE_STRUCT_LCONV_THOUSANDS_SEP
 
 /* Define to 1 if you have the <sys/dir.h> header file, and it defines `DIR'.
@@ -175,6 +178,9 @@
 /* If your Curses does not have color define this one */
 #undef NO_COLOR_CURSES
 
+/* Define to 1 if your C compiler doesn't accept -c and -o together. */
+#undef NO_MINUS_C_MINUS_O
+
 /* Name of package */
 #undef PACKAGE
 
@@ -189,6 +195,9 @@
 
 /* Define to the one symbol short name of this package. */
 #undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION

@@ -62,7 +62,7 @@
 typedef jmp_buf sigjmp_buf;
 #endif
 
-static char const rcsid[] = "$Id: display.c,v 1.30 2009/04/10 13:39:23 broeker Exp $";
+static char const rcsid[] = "$Id: display.c,v 1.33 2012/05/20 12:24:17 broeker Exp $";
 
 int	booklen;		/* OGS book name display field length */
 int	*displine;		/* screen line of displayed reference */
@@ -112,6 +112,7 @@ static	struct	{		/* text of input fields */
 	{"Find this", "egrep pattern",			findregexp},
 	{"Find this", "file",				findfile},
 	{"Find", "files #including this file",		findinclude},
+	{"Find", "assignments to this symbol", 		findassign},
 	{"Find all", "function definitions",		findallfcns},	/* samuel only */
 };
 
@@ -349,11 +350,7 @@ display(void)
 	i = totallines - nextline + 1;
 	bottomline = nextline;
 	if (i > 0) {
-	    s = "s";
-	    if (i == 1) {
-		s = "";
-	    }
-	    printw("* %d more line%s - press the space bar to display more *", i, s);
+	    printw("* Lines %d-%d of %d, %d more - press the space bar to display more *", topline, bottomline, totallines, i);
 	}
 	/* if this is the last page of references */
 	else if (topline > 1 && nextline > totallines) {

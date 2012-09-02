@@ -30,7 +30,7 @@
  DAMAGE. 
  =========================================================================*/
 
-/* $Id: global.h,v 1.37 2009/04/10 13:39:23 broeker Exp $ */
+/* $Id: global.h,v 1.38 2012/03/05 19:28:13 nhorman Exp $ */
 
 /*	cscope - interactive C symbol cross-reference
  *
@@ -343,6 +343,7 @@ char	*finddef(char *pattern);
 char	*findfile(char *dummy);
 char	*findinclude(char *pattern);
 char	*findsymbol(char *pattern);
+char	*findassign(char *pattern);
 char	*findregexp(char *egreppat);
 char	*findstring(char *pattern);
 char	*inviewpath(char *file);

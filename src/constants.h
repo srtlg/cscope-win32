@@ -30,7 +30,7 @@
  DAMAGE. 
  =========================================================================*/
 
-/* $Id: constants.h,v 1.15 2006/08/20 15:00:34 broeker Exp $ */
+/* $Id: constants.h,v 1.18 2012/04/07 14:12:07 broeker Exp $ */
 
 /*	cscope - interactive C symbol cross-reference
  *
@@ -65,7 +65,7 @@
 #define	DEL	'\177'		/* delete character */
 #define	DUMMYCHAR	' '	/* use space as a dummy character */
 #define	MSGLEN	((PATLEN) + 80)	/* displayed message length */
-#define	NUMLEN	5		/* line number length */
+#define	NUMLEN	10		/* line number length */
 #define	PATHLEN	250		/* file pathname length */
 #define	PATLEN	250		/* symbol pattern length */
 #define TEMPSTRING_LEN 8191     /* max strlen() of the global temp string */
@@ -101,7 +101,7 @@
 #define	REGEXP		6
 #define FILENAME	7
 #define INCLUDES	8
-#define	FIELDS		9
+#define	FIELDS		10
 
 #if (BSD || V9) && !__NetBSD__ && !__FreeBSD__
 # define TERMINFO	0	/* no terminfo curses */

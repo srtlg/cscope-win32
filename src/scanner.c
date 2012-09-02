@@ -482,7 +482,7 @@ static yyconst flex_int16_t yy_base[169] =
       110,  130,  315,    0,   88,   92,  548,  554,  390,  398,
       813,  401,    0,  424,    0,  132,  430,  220,  416,   98,
        47,    0,    0,  813,  437,    0,    0,  230,   51,  516,
-        0,   77,  442,    0,  813,    0,   43,  137,  548,  183,
+        0,   77,  442,    0,  813,    0,   43,  137,  553,  183,
       813,  606,  619,  623,  630,  643,  656,  670,  684,  697,
       711,  725,  739,  748,  761,  774,  783,  797
     } ;
@@ -572,9 +572,9 @@ static yyconst flex_int16_t yy_nxt[868] =
        62,  110,   40,  110,  151,  151,  123,  141,  151,  151,
        42,  151,  124,  151,  151,  151,   62,   62,   62,  131,
       131,  131,  151,  151,  132,  131,  131,  131,  131,  131,
-      132,   63,  151,   63,  131,  131,  151,  131,  151,  151,
-       63,  151,  151,  131,  151,  151,  151,  151,  151,  151,
-      151,  151,  151,   63,  151,  151,  151,  151,  151,  151,
+      132,  151,  151,  151,  131,  131,   63,  131,   63,  151,
+      151,  151,   63,  131,  151,   63,  151,  151,  151,  151,
+      151,  151,  151,  151,  151,  151,  151,  151,   63,  151,
       151,  151,  151,  151,  151,  151,  151,  151,  151,  151,
 
       134,  151,  151,  151,  151,  151,  134,   35,  151,   35,
@@ -671,9 +671,9 @@ static yyconst flex_int16_t yy_chk[868] =
       106,  110,  110,  110,    0,    0,  110,  140,    0,    0,
       110,    0,  110,    0,    0,    0,  110,  110,  110,  117,
       117,  117,    0,    0,  117,  118,  118,  118,  117,  117,
-      118,  149,    0,  149,  118,  118,    0,  117,    0,    0,
-      149,    0,    0,  118,    0,    0,    0,    0,    0,    0,
-        0,    0,    0,  149,    0,    0,    0,    0,    0,    0,
+      118,    0,    0,    0,  118,  118,  149,  117,  149,    0,
+        0,    0,  149,  118,    0,  149,    0,    0,    0,    0,
+        0,    0,    0,    0,    0,    0,    0,    0,  149,    0,
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
 
       117,    0,    0,    0,    0,    0,  118,  152,    0,  152,
@@ -782,7 +782,7 @@ char *yytext;
 
 #define	IFLEVELINC	5	/* #if nesting level size increment */
 
-static char const rcsid[] = "$Id: scanner.l,v 1.8 2007/03/09 23:54:34 broeker Exp $";
+static char const rcsid[] = "$Id: scanner.l,v 1.10 2011/06/29 15:48:00 nhorman Exp $";
 
 int	first;	/* buffer index for first char of symbol */
 int	last;	/* buffer index for last char of symbol */
@@ -1751,6 +1751,8 @@ YY_RULE_SETUP
 			char	*s;
 			
 			s = strpbrk(yytext, "\"<");
+			if (!s)
+				return(LEXERR);
 			incfile(s + 1, s);
 			/* HBB: avoid pointer mismatch if yytext is
 			 * unsigned, or a pointer */
@@ -1765,12 +1767,12 @@ YY_RULE_SETUP
 		}
 	YY_BREAK
 case 34:
-#line 590 "scanner.l"
+#line 592 "scanner.l"
 case 35:
-#line 591 "scanner.l"
+#line 593 "scanner.l"
 case 36:
 YY_RULE_SETUP
-#line 591 "scanner.l"
+#line 593 "scanner.l"
 {	/* punctuation and operators */
 		more:	first = yyleng;
 			yymore();
@@ -1778,10 +1780,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 595 "scanner.l"
+#line 597 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 1785 "scanner.c"
+#line 1787 "scanner.c"
 			case YY_STATE_EOF(INITIAL):
 			case YY_STATE_EOF(SDL):
 				yyterminate();
@@ -2757,7 +2759,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 595 "scanner.l"
+#line 597 "scanner.l"
 
 
 

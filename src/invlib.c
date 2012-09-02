@@ -56,7 +56,7 @@
 #define	FMTVERSION	1	/* inverted index format version */
 #define	ZIPFSIZE	200	/* zipf curve size */
 
-static char const rcsid[] = "$Id: invlib.c,v 1.18 2006/09/30 15:38:16 broeker Exp $";
+static char const rcsid[] = "$Id: invlib.c,v 1.21 2012/07/10 20:01:40 nhorman Exp $";
 
 #if DEBUG
 /* FIXME HBB 20010705: nowhere in the source is `invbreak' ever set to
@@ -169,8 +169,8 @@ invmake(char *invname, char *invpost, FILE *infile)
 	numpost = 1;
 
 	/* set up as though a block had come and gone, i.e., set up for new block  */
-	/* FIXME HBB: magic number alert (16) */
-	amtused = 16; /* leave no space - init 3 words + one for luck */
+	/* 3 longs needed for: numinvitems, next block, and previous block */
+	amtused = 3 * sizeof(long);
 	numinvitems = 0;
 	numlogblk = 0;
 	lastinblk = sizeof(t_logicalblk);
@@ -228,12 +228,12 @@ invmake(char *invname, char *invpost, FILE *infile)
 			num = BASE * num + *++s - '!';
 		} while (++i < PRECISION);
 		posting.lineoffset = num;
-		while (++fileindex < nsrcoffset && num > srcoffset[fileindex]) {
+		while (++fileindex < nsrcfiles && num > srcoffset[fileindex]) {
 			;
 		}
 		posting.fileindex = --fileindex;
 		posting.type = *++s;
-		num = *++s - '!';
+		++s;
 		if (*s != '\n') {
 			num = *++s - '!';
 			while (*++s != '\n') {
@@ -354,7 +354,7 @@ invnewterm(void)
 {
     int	backupflag, i, j, holditems, gooditems, howfar;
     unsigned int maxback, len, numwilluse, wdlen;
-    char	*tptr, *tptr2, *tptr3;
+    char	*tptr, *tptr3;
 
     union {
 	unsigned long	packword[2];
@@ -371,8 +371,10 @@ invnewterm(void)
 	zipf[0]++;
 #endif
     len = strlen(thisterm);
+    /* length of term rounded up to long boundary */
     wdlen = (len + (sizeof(long) - 1)) / sizeof(long);
-    /* HBB FIXME 20060419: magic number: 3 */
+    /* each term needs 2 longs for its iteminfo and
+     * 1 long for its offset */
     numwilluse = (wdlen + 3) * sizeof(long);
     /* new block if at least 1 item in block */
     if (numinvitems && numwilluse + amtused > sizeof(t_logicalblk)) {
@@ -420,7 +422,6 @@ invnewterm(void)
 		maxback = i;
 		backupflag = howfar;
 		gooditems = holditems;
-		tptr2 = logicalblk.chrblk + iteminfo.e.offset;
 	    }
 	}
 	/* see if backup will occur  */
@@ -436,10 +437,13 @@ invnewterm(void)
 	    invcannotwrite(indexfile);
 	    return(0);
 	}
-	amtused = 16;
+	/* 3 longs needed for: numinvitems, next block, and previous block */
+	amtused = 3 * sizeof(long);
 	numlogblk++;
 	/* check if had to back up, if so do it */
 	if (backupflag) {
+	    char *tptr2;
+	    
 	    /* find out where the end of the new block is */
 	    iteminfo.packword[0] = logicalblk.invblk[numinvitems*2+1];
 	    tptr3 = logicalblk.chrblk + iteminfo.e.offset;
@@ -467,7 +471,7 @@ invnewterm(void)
 	    while (tptr3 > tptr)
 		*--tptr2 = *--tptr3;
 	    lastinblk -= j;
-	    amtused += (8 * backupflag + j);
+	    amtused += ((2 * sizeof(long)) * backupflag + j);
 	    for (i = 3; i < (backupflag * 2 + 2); i += 2) {
 		iteminfo.packword[0] = logicalblk.invblk[i];
 		iteminfo.e.offset += (tptr2 - tptr3);
@@ -930,7 +934,7 @@ boolfile(INVCONTROL *invcntl, long *num, int boolarg)
 	switch (boolarg) {
 	case AND:
 	case NOT:
-		newsetp = set1p = item;
+		newsetp = item;
 		break;
 
 	case BOOL_OR:
@@ -964,7 +968,9 @@ boolfile(INVCONTROL *invcntl, long *num, int boolarg)
 			}
 			newitem = item2;
 		}
+#if 0 /* this write is only need by commented-out code later */
 		set1p = item;
+#endif
 		newsetp = newitem;
 	}
 	file = invcntl->postfile;

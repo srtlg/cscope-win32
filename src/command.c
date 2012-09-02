@@ -47,7 +47,7 @@
 #endif
 #include <ctype.h>
 
-static char const rcsid[] = "$Id: command.c,v 1.33 2009/04/10 13:39:23 broeker Exp $";
+static char const rcsid[] = "$Id: command.c,v 1.36 2012/05/20 13:58:53 broeker Exp $";
 
 
 int	selecting;
@@ -449,8 +449,9 @@ cscope: cannot open pipe to shell command: %s\n", newpat);
 
     case ctrl('B'):		/* cmd history back */
     case ctrl('F'):		/* cmd history fwd */
-	if (selecting)
-	    return(NO);
+	if (selecting) {
+	    selecting = 0;
+	}
 
 	curritem = currentcmd();
 	item = (commandc == ctrl('F')) ? nextcmd() : prevcmd();
@@ -502,7 +503,7 @@ cscope: cannot open pipe to shell command: %s\n", newpat);
 	/* FALLTHROUGH */
     default:
 	if (selecting && !mouse) {
-	    char		*c;
+	    char *c;
 
 	    if ((c = strchr(dispchars, commandc)))
 		editref(c - dispchars);
@@ -634,10 +635,16 @@ changestring(void)
 	atchange();
 		
 	/* get a character from the terminal */
-	if ((c = mygetch()) == EOF
-	    || c == ctrl('D') 
-	    || c == ctrl('Z')) {
+	if ((c = mygetch()) == EOF || c == ctrl('D')) {
 	    break;	/* change lines */
+	}
+	if (c == ctrl('Z')) {
+#ifdef SIGTSTP
+	    kill(0, SIGTSTP);
+	    goto same;
+#else
+	    break;	/* change lines */
+#endif
 	}
 	/* see if the input character is a command */
 	switch (c) {
@@ -884,12 +891,20 @@ countrefs(void)
     filelen = 4;		/* strlen("File") */
     fcnlen = 8;		/* strlen("Function") */
     numlen = 0;
-    while ((i = fscanf(refsfound, "%250s%250s%5s %5000[^\n]", file,
-		       function, linenum, tempstring)) != EOF) {
-	if (i != 4 ||
-	    !isgraph((unsigned char) *file) ||
-	    !isgraph((unsigned char) *function) ||
-	    !isdigit((unsigned char) *linenum)) {
+    /* HBB NOTE 2012-04-07: it may look like we shouldn't assing tempstring here,
+     * since it's not used.  But it has to be assigned just so the return value
+     * of fscanf will actually reach 4. */
+    while (EOF != (i = fscanf(refsfound, 
+			      "%" PATHLEN_STR "s%" PATLEN_STR "s%" NUMLEN_STR "s %" TEMPSTRING_LEN_STR "[^\n]",
+			      file, function, linenum, tempstring
+			     )
+	          )
+	  ) {
+	if (   (i != 4)
+	    || !isgraph((unsigned char) *file)
+	    || !isgraph((unsigned char) *function)
+	    || !isdigit((unsigned char) *linenum)
+	   ) {
 	    postmsg("File does not have expected format");
 	    totallines = 0;
 	    disprefs = 0;
