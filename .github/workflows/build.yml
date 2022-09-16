@@ -1,0 +1,48 @@
+name: build-cscope-win32
+on: [release]
+jobs:
+  build-cscope-win32:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+#     - name: Proxy
+#       run: |
+#         rm /etc/apt/sources.list.d/*
+#         echo 'Acquire::http::proxy "http://172.17.0.1:3142/";' >> /etc/apt/apt.conf
+
+      - name: Set up MinGW
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
+            gcc-mingw-w64 flex bison
+
+      - name: Build pdcurses
+        run: |
+          mkdir pdcurses
+          ( cd pdcurses; wget -O- https://github.com/wmcbrine/PDCurses/archive/refs/tags/3.9.tar.gz | tar xzv --strip-components=1 )
+          ( cd pdcurses/wincon ; make CC=x86_64-w64-mingw32-gcc LINK=x86_64-w64-mingw32-gcc AR=x86_64-w64-mingw32-ar )
+
+      - name: Build rxspencer
+        run: |
+          mkdir rxspencer
+          ( cd rxspencer ; wget -O- https://github.com/garyhouston/rxspencer/archive/refs/tags/v3.9.0.tar.gz | tar xzv --strip-components=1 )
+          ( cd rxspencer ; ls regcomp.c regerror.c regexec.c regfree.c | xargs -n1 x86_64-w64-mingw32-gcc -c -O2 )
+          ( cd rxspencer ; x86_64-w64-mingw32-ar rcv rxspencer.a regcomp.o regerror.o regexec.o regfree.o )
+          
+
+      - name: Build cscope
+        run: |
+          ( cd src ; make CC=x86_64-w64-mingw32-gcc )
+          cp src/cscope.exe .
+          x86_64-w64-mingw32-strip cscope.exe
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            AUTHORS
+            COPYING
+            cscope.exe
