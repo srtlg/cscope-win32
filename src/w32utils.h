@@ -7,7 +7,9 @@ char *get_longpath(char *path);
 void to_longpath(char *path, int len);
 
 # ifdef WIN32
+# ifndef HAVE_UNISTD_H
 void sleep(int sec);
+# endif
 # endif
 
 #endif /* CSCOPE_W32UTILS_H */

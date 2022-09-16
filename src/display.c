@@ -48,6 +48,7 @@
 #if defined(USE_NCURSES) && !defined(RENAMED_NCURSES)
 #include <ncurses.h>
 #else
+#include <curspriv.h>
 #include <curses.h>
 #endif
 #include <setjmp.h>	/* jmp_buf */

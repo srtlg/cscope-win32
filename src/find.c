@@ -35,9 +35,8 @@
  *	searching functions
  */
 
-#include "w32utils.h"
-
 #include "global.h"
+#include "w32utils.h"
 
 #include "build.h"
 #include "scanner.h"		/* for token definitions */
